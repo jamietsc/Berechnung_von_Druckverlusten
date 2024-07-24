@@ -95,7 +95,6 @@ def berechnen():
                 rohrreibungszahl = rohrreibungszahl_glatte_rohre()
         elif (65 < reynoldszahl * (rauhigkeitswert / rohrdurchmesser) < 1300):
             rohrreibungszahl = rohrreibungszahl_übergangsgebiet(reynoldszahl, rohrdurchmesser, rauhigkeitswert)
-            max_vstrom_testfall2 = maximaler_volumenstrom(rohrreibungszahl, rohrlänge, rohrdurchmesser, dichte)
         else:
             rohrreibungszahl_für_raue_rohre(rohrdurchmesser, rauhigkeitswert)
 
@@ -103,17 +102,17 @@ def berechnen():
     druckverlust = berechnung_druckverlust(rohrreibungszahl, rohrlänge, rohrdurchmesser, dichte,
                                            strömungsgeschwindigkeit)
     druckverlust = pascal_in_bar(druckverlust)
-
+    if(druckverlust<1):
+        max_vstrom_testfall2 = maximaler_volumenstrom(druckverlust, volumenstrom)
 
 
     if(max_vstrom_testfall2 == 0):
         ergebnis_label.config(
-            text="Die Rohrreibungszahl beträgt: " + str(rohrreibungszahl) + ".\nDer Druckverlust beträgt: " + str(
-                druckverlust) + " bar.")
+            text="Die Rohrreibungszahl beträgt:  %.4f  .\nDer Druckverlust beträgt: %.3f bar." %(rohrreibungszahl, druckverlust))
     else:
         ergebnis_label.config(
-            text="Die Rohrreibungszahl beträgt: " + str(rohrreibungszahl) + ".\nDer Druckverlust beträgt: " + str(
-                druckverlust) + f" bar. \nDer Volumenenstrom darf maximal um ${max_vstrom_testfall2}% erhöht werden,\ndamit ein Druckverlust von mehr als einem Bar nicht überschritten wird.")
+            text="Die Rohrreibungszahl beträgt: %.4f .\nDer Druckverlust beträgt: %.3f bar. \nDer Volumenenstrom darf maximal um %.5f%% erhöht werden,\n"
+                                f"damit ein Druckverlust von mehr als einem Bar nicht überschritten wird." % (rohrreibungszahl, druckverlust, max_vstrom_testfall2))
 
 """
 In dieser Funktion wird der wert auf die normale EInheit umgerechnet
@@ -306,8 +305,10 @@ In dieser Funktion wird berechnet um wie viel Prozent der Volumenstrom maximal s
 @:param d ist der eingegebene Rohrdurchmesser
 @:returns max_voluemsntrom 
 """
-def maximaler_volumenstrom(rohrreibungszahl, L, d, dichte):
-    max_volumenstrom = ((1 * math.pi * math.pow(d, 3)) / (rohrreibungszahl * 2 * L * dichte)) * 100
+def maximaler_volumenstrom(druckverlust, volumenstrom):
+    V_temp = math.sqrt(100/(druckverlust*100))
+    max_volumenstrom = volumenstrom * V_temp
+    max_volumenstrom = ((max_volumenstrom - volumenstrom)/volumenstrom) * 100
     return max_volumenstrom
 
 
